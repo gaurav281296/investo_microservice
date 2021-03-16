@@ -7,7 +7,7 @@ def validate_trade(trade_data):
     trade_data["trade_price"] = decimal.Decimal(trade_data["trade_price"])
     trade_data["trade_type"] = trade_data["trade_type"].casefold()
     if trade_data["trade_price"] < 0.01:
-        raise Exception("trade_price cannot be negative")
+        raise Exception("trade_price cannot be negative or zero")
     if trade_data["trade_type"].casefold() not in ["b", "s"]:
         raise Exception("trade_type can only be 'S' or 'B'")
     if trade_data["trade_quantity"] < 1:

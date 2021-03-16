@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -25,8 +26,12 @@ SECRET_KEY = '-7ct689k%3w@$-(o7rr3srn1%jo@ix^@l@kb9t6g+k%b!tg-%8'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
+if os.environ.get('SWARM_MODE'):
+    IP_TABLE_HOST = 'postgres'
+else:
+    IP_TABLE_HOST = '0.0.0.0'
 
 # Application definition
 
@@ -62,6 +67,9 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+if os.environ.get('CONTAINER_MODE'):
+    MIDDLEWARE += 'whitenoise.middleware.WhiteNoiseMiddleware',
+
 ROOT_URLCONF = 'investo.urls'
 
 TEMPLATES = [
@@ -86,10 +94,16 @@ WSGI_APPLICATION = 'investo.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 
+print("Connecting on {}".format(IP_TABLE_HOST))
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'postgres',
+        'USER': 'postgres',
+        'PASSWORD': 'postgres',
+        'HOST': IP_TABLE_HOST,
+        'PORT': 5432,
     }
 }
 
@@ -131,3 +145,5 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 STATIC_URL = '/static/'
+if os.environ.get('CONTAINER_MODE'):
+    STATIC_ROOT = os.path.join(BASE_DIR, 'static')

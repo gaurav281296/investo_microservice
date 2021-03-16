@@ -1,0 +1,39 @@
+version: "3.4"
+services:
+  postgres:
+    image: postgres:alpine
+    expose:
+      - 5432
+    volumes:
+      - ~/var/lib/postgresql/data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    networks:
+      - webnet
+  backend:
+    image: gaurav28/investo_server:latest
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+    environment:
+      SWARM_MODE: 1
+      CONTAINER_MODE: 1
+    depends_on:
+      - postgres
+    expose:
+      - 8000
+    networks:
+      - webnet
+  nginx:
+    image: gaurav28/nginx:latest
+    ports:
+      - "80:80"
+    networks:
+      - webnet
+    depends_on:
+      - backend
+networks:
+  webnet:
